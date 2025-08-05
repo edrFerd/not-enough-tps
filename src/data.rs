@@ -1,5 +1,7 @@
 use std::mem::MaybeUninit;
 
+use rand::{Rng, RngCore};
+
 
 /// 终端电力状态数据
 #[derive(Debug, Clone, Copy)]
@@ -47,3 +49,14 @@ impl From<&SendingData> for Vec<u8> {
     }
 }
 
+// 不对, id不是 u64嘛
+// 笑死
+// 妈的，直接甩一个对照表得了
+impl SendingData {
+    pub fn new_rand(rander: &mut rand::rngs::ThreadRng) -> Self {
+        // 正态分布
+        // let id: u64 = rander.next_u64() ** 0.5;
+        todo!()
+    
+    }
+}
