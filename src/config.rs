@@ -21,6 +21,8 @@ pub struct Config {
     pub receiver_id: String,
     /// 客户端容量
     pub client_capacity: usize,
+    /// 是否 retain
+    pub retain: bool,
     /// MQTT 主题
     pub topic: String,
 }
@@ -33,7 +35,8 @@ impl Default for Config {
             sender_id: "net-sender".to_string(),
             receiver_id: "net-receiver".to_string(),
             client_capacity: 100,
-            topic: "not-enough/tps".to_string(),
+            retain: false,
+            topic: "notenough/tps".to_string(),
         }
     }
 }

@@ -56,7 +56,7 @@ pub async fn async_main() -> anyhow::Result<()> {
 /// 运行模式是哪一方的
 /// 就这玩意会有两种模式
 /// 一种是压测机, 框框发请求
-/// 一种是接收机, 接受+insert到pg里
+/// 一种是接收机, 接收 + insert 到 pg 里
 pub enum RunMode {
     Sender,
     Receiver,
