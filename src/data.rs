@@ -44,7 +44,9 @@ impl From<&SendingData> for Vec<u8> {
         // 取地址, copy byte
         // 我估计你看到这里会被吓到（确信
         // 但这不就是最简单的 serde/deserialize 吗 (乐)
-        unsafe { std::ptr::copy_nonoverlapping(value as *const SendingData, data.as_mut_ptr() as *mut _, DATA_LEN) };
+        // unsafe { std::ptr::copy_nonoverlapping(value, data.as_mut_ptr() as *mut _, DATA_LEN) };
+        let bytes = unsafe { std::slice::from_raw_parts(value as *const SendingData as *const u8, DATA_LEN) };
+        data.extend_from_slice(bytes);
         data
     }
 }

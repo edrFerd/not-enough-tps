@@ -3,17 +3,24 @@ pub mod data;
 pub mod config;
 pub mod cli;
 
-use rumqttc::{AsyncClient, MqttOptions, QoS};
-use std::time::Duration;
-use tokio::{task, time};
+use rumqttc::QoS;
 
-use crate::server::sender;
+// use std::time::Duration;
+// use tokio::{task, time};
+// use rumqttc::{AsyncClient, MqttOptions};
+
+
+use crate::server::{receiver, sender};
 
 pub const QOS: QoS = QoS::ExactlyOnce;
 
 pub async fn async_main() -> anyhow::Result<()> { 
-    // let
-    sender::main().await?;
+    // 解析 命令行参数
+    let run_mode = cli::parse_run_mode();
+    match run_mode {
+        RunMode::Sender => sender::main().await?,
+        RunMode::Receiver => receiver::main().await?,
+    }
     Ok(())
 }
 
@@ -21,7 +28,7 @@ pub async fn async_main() -> anyhow::Result<()> {
 //     println!("Hello, world!");
 
 //     // let mut mqttoptions = MqttOptions::new("rumqtt-async", "test.mosquitto.org", 1883);
-//     let mut mqttoptions = MqttOptions::new("rumqtt-async", "192.168.3.45", 1883);
+//     let mut mqttoptions = MqttOptions::new("rumqtt-async", "192.168.233.3", 1883);
 //     mqttoptions.set_keep_alive(Duration::from_secs(5));
 
 //     let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
@@ -56,14 +63,16 @@ pub enum RunMode {
 }
 
 fn main() -> anyhow::Result<()> {
-    // 解析 命令行参数
-    let run_mode = cli::parse_run_mode();
     config::init_config()?;
+
+    println!("starting");
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .worker_threads(4) // 2c4g 总能跑得起来 4 线程吧，跑不起来那就是你的 CPU 不行（建议 fuck off cpu(
         .build()?;
+
+    println!("building tokio runtime");
 
     rt.block_on(async_main())?;
 

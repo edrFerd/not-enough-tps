@@ -1,4 +1,4 @@
-use rumqttc::{AsyncClient, MqttOptions, QoS};
+use rumqttc::{AsyncClient, MqttOptions};
 
 pub async fn main() -> anyhow::Result<()> { 
     let cfg = crate::config::get_cfg();

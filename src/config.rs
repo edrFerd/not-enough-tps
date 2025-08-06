@@ -28,8 +28,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            broke_server_ip: "192.168.3.45".to_string(),
-            broke_server_port: 1883,
+            broke_server_ip: "127.0.0.1".to_string(),
+            broke_server_port: 1884,
             sender_id: "net-sender".to_string(),
             receiver_id: "net-receiver".to_string(),
             client_capacity: 100,
@@ -46,7 +46,18 @@ pub fn init_config() -> anyhow::Result<()> {
         let cfg_str = std::fs::read_to_string(path)?;
         toml::from_str(&cfg_str)?
     } else {
-        Config::default()
+        // let cfg_str = toml::to_string(&Config::default())?;
+        // std::fs::write("config.toml", cfg_str)?;
+        // Config::default()
+        match std::fs::read_to_string("config.toml") {
+            Ok(cfg_str) => toml::from_str(&cfg_str)?,
+            Err(_) => {
+                let cfg_str = toml::to_string(&Config::default())?;
+                std::fs::write("config.toml", cfg_str)?;
+                Config::default()
+            }
+
+        }
     };
     CONFIG.set(cfg).unwrap();
 

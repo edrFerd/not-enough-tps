@@ -25,5 +25,9 @@ target
 
 /target
 
+# cfg file
+
+config.toml
+
 # Added by vscode extension for Local History
 .lh 
