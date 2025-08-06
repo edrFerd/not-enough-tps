@@ -49,14 +49,25 @@ impl From<&SendingData> for Vec<u8> {
     }
 }
 
-// 不对, id不是 u64嘛
-// 笑死
-// 妈的，直接甩一个对照表得了
 impl SendingData {
     pub fn new_rand(rander: &mut rand::rngs::ThreadRng) -> Self {
-        // 正态分布
-        // let id: u64 = rander.next_u64() ** 0.5;
-        todo!()
-    
+        let id: u64 = (rander.sample(rand::distr::Uniform::new(1, 1_0000_0000).unwrap()) as f32).sqrt() as u64;
+        let voltage: f64 = rander.sample(rand::distr::Uniform::new(220.0, 1000.0).unwrap());
+        let current: f64 = rander.sample(rand::distr::Uniform::new(0.5, 1000.0).unwrap());
+        let power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
+        let power_factor: f64 = rander.sample(rand::distr::Uniform::new(0.5, 1.0).unwrap());
+        let frequency: f64 = rander.sample(rand::distr::Uniform::new(50.0, 100.0).unwrap());
+        let total_active_power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
+        let total_reactive_power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
+        Self {
+            id,
+            voltage,
+            current,
+            power,
+            power_factor,
+            frequency,
+            total_active_power,
+            total_reactive_power,
+        }
     }
 }

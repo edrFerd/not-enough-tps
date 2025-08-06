@@ -7,10 +7,13 @@ use rumqttc::{AsyncClient, MqttOptions, QoS};
 use std::time::Duration;
 use tokio::{task, time};
 
+use crate::server::sender;
+
 pub const QOS: QoS = QoS::ExactlyOnce;
 
 pub async fn async_main() -> anyhow::Result<()> { 
     // let
+    sender::main().await?;
     Ok(())
 }
 

@@ -28,19 +28,18 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            broke_server_ip: "127.0.0.1".to_string(),
+            broke_server_ip: "192.168.3.45".to_string(),
             broke_server_port: 1883,
             sender_id: "net-sender".to_string(),
             receiver_id: "net-receiver".to_string(),
             client_capacity: 100,
-            topic: "not/enough/tps".to_string(),
+            topic: "not-enough/tps".to_string(),
         }
     }
 }
 
 
 pub fn init_config() -> anyhow::Result<()> {
-    // TODO: Load config from file
     let path = crate::cli::parse_config_path();
 
     let cfg = if let Some(path) = path {
