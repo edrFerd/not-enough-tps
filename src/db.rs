@@ -1,4 +1,4 @@
-use sqlx::{Pool, Postgres};
+use sqlx::{Pool, Postgres, QueryBuilder};
 
 use crate::data::SendingData;
 
@@ -76,6 +76,44 @@ async fn check_db(pool: &Pool<Postgres>) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub async fn insert_batch(
+    pool: &sqlx::Pool<Postgres>,
+    batch: &[SendingData],
+) -> anyhow::Result<()> {
+    if batch.is_empty() {
+        return Ok(());
+    }
+
+    let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+        r#"
+        INSERT INTO tps.main (
+            data_id,
+            voltage,
+            current,
+            power,
+            power_factor,
+            frequency,
+            total_active_power,
+            total_reactive_power
+        )
+        "#,
+    );
+
+    qb.push_values(batch, |mut b, d| {
+        b.push_bind(d.id as i32)
+            .push_bind(d.voltage)
+            .push_bind(d.current)
+            .push_bind(d.power)
+            .push_bind(d.power_factor)
+            .push_bind(d.frequency)
+            .push_bind(d.total_active_power)
+            .push_bind(d.total_reactive_power);
+    });
+
+    qb.build().execute(pool).await?;
+    Ok(())
+}
+
 pub async fn insert_data_to_db(pool: &Pool<Postgres>, data: &SendingData) -> anyhow::Result<()> {
     sqlx::query(
         r#"
@@ -101,6 +139,5 @@ pub async fn insert_data_to_db(pool: &Pool<Postgres>, data: &SendingData) -> any
     .bind(data.total_reactive_power)
     .execute(pool)
     .await?;
-
     Ok(())
 }

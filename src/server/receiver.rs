@@ -27,28 +27,36 @@ pub async fn main() -> anyhow::Result<()> {
     let start_tick = Instant::now();
     let mut count_tick = start_tick;
 
+    const INSERT_BATCH: usize = 100;
+    const COUNT_BATCH: usize = 10000;
+
+    let mut buffer = Vec::with_capacity(INSERT_BATCH);
     while let Ok(notification) = eventloop.poll().await {
-        // println!("Received = {notification:?}");
-        match notification {
-            Event::Incoming(rumqttc::Packet::Publish(p)) => {
-                let data = p.payload.iter().as_slice();
-                let _ = SendingData::from(data);
-                counter += 1;
+        if let Event::Incoming(rumqttc::Packet::Publish(p)) = notification {
+            let data = p.payload.iter().as_slice();
+            let data = SendingData::from(data);
+            
+            counter += 1;
+            buffer.push(data);
 
-                if counter % 10000 == 0 {
-                    let total_secs = start_tick.elapsed().as_secs_f64();
-                    let total_tps = counter as f64 / total_secs;
-                    let interval_secs = count_tick.elapsed().as_secs_f64();
-                    let interval_tps = 10_000_f64 / interval_secs;
-                    count_tick = Instant::now();
-
-                    println!(
-                        "已接收 {} 条 | 总 TPS: {total_tps:.3} | 近 10k TPS: {interval_tps:.3} | 耗时: {interval_secs:.3}s",
-                        counter
-                    );
-                }
+            if counter.is_multiple_of(COUNT_BATCH as u64) {
+                let total_secs = start_tick.elapsed().as_secs_f64();
+                let total_tps = counter as f64 / total_secs;
+                let interval_secs = count_tick.elapsed().as_secs_f64();
+                let interval_tps = COUNT_BATCH as f64 / interval_secs;
+                count_tick = Instant::now();
+                println!(
+                    "已接收 {} 条 | 总 TPS: {total_tps:.3} | 近 {COUNT_BATCH} TPS: {interval_tps:.3} | 耗时: {interval_secs:.3}s",
+                    counter
+                );
             }
-            _ => {}
+
+            if counter.is_multiple_of(INSERT_BATCH as u64) {
+                let conn = db_connection.clone();
+                let buf = buffer.clone();
+                tokio::spawn(async move { crate::db::insert_batch(&conn, &buf).await });
+                buffer.clear();
+            }
         }
     }
 

@@ -4,7 +4,7 @@ use anyhow::Result;
 use rumqttc::{AsyncClient, MqttOptions};
 
 pub async fn notification(mut eventloop: rumqttc::EventLoop) {
-    while let Ok(_) = eventloop.poll().await {}
+    while (eventloop.poll().await).is_ok() {}
 }
 
 pub async fn send_main(client: AsyncClient) -> Result<()> {
@@ -24,7 +24,7 @@ pub async fn send_main(client: AsyncClient) -> Result<()> {
             .await?;
         counter += 1;
 
-        if counter % 10000 == 0 {
+        if counter.is_multiple_of(10000) {
             let total_secs = start_tick.elapsed().as_secs_f64();
             let total_tps = counter as f64 / total_secs;
             let interval_secs = count_tick.elapsed().as_secs_f64();
