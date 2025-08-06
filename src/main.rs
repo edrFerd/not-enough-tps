@@ -1,7 +1,8 @@
-pub mod server;
-pub mod data;
-pub mod config;
 pub mod cli;
+pub mod config;
+pub mod data;
+pub mod db;
+pub mod server;
 
 use rumqttc::QoS;
 
@@ -9,12 +10,11 @@ use rumqttc::QoS;
 // use tokio::{task, time};
 // use rumqttc::{AsyncClient, MqttOptions};
 
-
 use crate::server::{receiver, sender};
 
 pub const QOS: QoS = QoS::ExactlyOnce;
 
-pub async fn async_main() -> anyhow::Result<()> { 
+pub async fn async_main() -> anyhow::Result<()> {
     // 解析 命令行参数
     let run_mode = cli::parse_run_mode();
     match run_mode {

@@ -1,13 +1,12 @@
 use std::mem::MaybeUninit;
 
-use rand::{Rng, RngCore};
-
+use rand::Rng;
 
 /// 终端电力状态数据
 #[derive(Debug, Clone, Copy)]
 pub struct SendingData {
-    /// 编号
-    pub id: u64,
+    /// 终端编号
+    pub id: u32,
     /// 电压
     pub voltage: f64,
     /// 电流
@@ -32,11 +31,12 @@ impl From<&[u8]> for SendingData {
     fn from(value: &[u8]) -> Self {
         // I love MaybeUninit
         let mut data = MaybeUninit::<SendingData>::uninit();
-        unsafe { std::ptr::copy_nonoverlapping(value.as_ptr(), data.as_mut_ptr() as *mut _, DATA_LEN) };
+        unsafe {
+            std::ptr::copy_nonoverlapping(value.as_ptr(), data.as_mut_ptr() as *mut _, DATA_LEN)
+        };
         unsafe { data.assume_init() }
     }
 }
-
 
 impl From<&SendingData> for Vec<u8> {
     fn from(value: &SendingData) -> Self {
@@ -45,7 +45,9 @@ impl From<&SendingData> for Vec<u8> {
         // 我估计你看到这里会被吓到（确信
         // 但这不就是最简单的 serde/deserialize 吗 (乐)
         // unsafe { std::ptr::copy_nonoverlapping(value, data.as_mut_ptr() as *mut _, DATA_LEN) };
-        let bytes = unsafe { std::slice::from_raw_parts(value as *const SendingData as *const u8, DATA_LEN) };
+        let bytes = unsafe {
+            std::slice::from_raw_parts(value as *const SendingData as *const u8, DATA_LEN)
+        };
         data.extend_from_slice(bytes);
         data
     }
@@ -53,14 +55,17 @@ impl From<&SendingData> for Vec<u8> {
 
 impl SendingData {
     pub fn new_rand(rander: &mut rand::rngs::ThreadRng) -> Self {
-        let id: u64 = (rander.sample(rand::distr::Uniform::new(1, 1_0000_0000).unwrap()) as f32).sqrt() as u64;
+        let id: u32 = (rander.sample(rand::distr::Uniform::new(1, 1_0000_0000).unwrap()) as f32)
+            .sqrt() as u32;
         let voltage: f64 = rander.sample(rand::distr::Uniform::new(220.0, 1000.0).unwrap());
         let current: f64 = rander.sample(rand::distr::Uniform::new(0.5, 1000.0).unwrap());
-        let power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
+        let power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1_000_000.0).unwrap());
         let power_factor: f64 = rander.sample(rand::distr::Uniform::new(0.5, 1.0).unwrap());
         let frequency: f64 = rander.sample(rand::distr::Uniform::new(50.0, 100.0).unwrap());
-        let total_active_power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
-        let total_reactive_power: f64 = rander.sample(rand::distr::Uniform::new(0.0, 1000_000.0).unwrap());
+        let total_active_power: f64 =
+            rander.sample(rand::distr::Uniform::new(0.0, 1_000_000.0).unwrap());
+        let total_reactive_power: f64 =
+            rander.sample(rand::distr::Uniform::new(0.0, 1_000_000.0).unwrap());
         Self {
             id,
             voltage,
